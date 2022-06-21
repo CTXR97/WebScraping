@@ -1,0 +1,28 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+
+questionlist = []
+
+def getQuestions(tag, page):
+        url = f'httpsL//.....{tag}...{page}...'
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+
+        questions = soup.find_all('div', {'class': 'question-summary'})
+
+        for item in questions:
+            question = {
+            tag = tag,
+            title = item.find('a', {'class': 'question-hyperlink'}).text,
+            link : 'https://stackoverflow.com' + item.find('a', {'class': 'question-hyperlink'})['href']
+            }
+            questionlist.append(question)
+        return
+
+    #to get the pages range
+    for x in range(1,3):
+        getQuestions('python',x)
+
+df = pd.DataFrame(questionlist)
+df.to_excel('stackquestions.xlsx', index=False)
