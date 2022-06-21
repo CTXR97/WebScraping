@@ -1,0 +1,137 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import matplotlib.pyplot as plt
+
+url ='http://quotes.toscrape.com'
+response = requests.get(url)
+#print(response) #200 means ok
+html = response.text
+
+soup = BeautifulSoup(html, 'html.parser')
+
+quote_divs = soup.find_all('div', {'class': 'quote'})
+
+#To isolate and grab datapoints from one quote first
+first_quote = quote_divs[0]
+
+#text of quote
+text = first_quote.find('span', {'class': 'text'})
+text = text.text
+
+#Author
+author = first_quote.find('small', {'class': 'author'})
+author = author.text
+
+#link
+author_link = first_quote.find('a')['href']
+author_link = url+author_link
+
+#Tags
+tag_container = first_quote.find('div', {'class': 'tags'})
+tag_links = tag_container.find_all('a')
+
+tags = []
+for tag in tags:
+    tags.append(tag.text)
+
+#To grab from a quote div
+
+def quote_data(quote_div):
+    #Collect the quote
+    # text of quote
+    text = first_quote.find('span', {'class': 'text'})
+    text = text.text
+
+    # Author
+    author = first_quote.find('small', {'class': 'author'})
+    author = author.text
+
+    # link
+    author_link = first_quote.find('a')['href']
+    author_link = url + author_link
+
+    # Tags
+    tag_container = first_quote.find('div', {'class': 'tags'})
+    tag_links = tag_container.find_all('a')
+
+    tags = []
+    for tag in tags:
+        tags.append(tag.text)
+
+    #Return data as a dictionary
+    return{'author': author,
+           'text': text,
+           'author_link': author_link,
+           'tags': tags}
+
+# Collect from first page
+page_one_data = []
+for div in quote_divs:
+    #Apply same function on each quote
+    data_from_div = quote_data(div)
+    page_one_data.append(data_from_div)
+
+#To scrape from multiple pages
+def scrape_page(quote_divs):
+    data = []
+    for div in quote_divs:
+        div_data = quote_data(div)
+        data.append(div.data)
+    return data
+
+url ='http://quotes.toscrape.com'
+response = requests.get(url)
+#print(response) #200 means ok
+html = response.text
+soup = BeautifulSoup(html, 'html.parser')
+quote_divs = soup.find_all('div', {'class': 'quote'})
+
+data = scrape_page(quote_divs)
+
+#check next page exist
+
+pager = soup.find('ul', {'class': 'pager'})
+
+if pager:
+    next_page = pager.find('li', {'class': 'next'})
+
+    if next_page:
+        next_page = next_page.findChild('a')\
+                            .attrs\
+                            .get('href')
+
+next_page = url + next_page
+
+#Recursion
+def scrape_quotes(url):
+    url = 'http://quotes.toscrape.com'
+    response = requests.get(url)
+    #print(response)  # 200 means ok
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+    quote_divs = soup.find_all('div', {'class': 'quote'})
+
+    data = scrape_page(quote_divs)
+
+    pager = soup.find('ul', {'class': 'pager'})
+    if pager:
+        next_page = pager.find('li', {'class': 'next'})
+
+        if next_page:
+            next_page = next_page.findChild('a') \
+                .attrs \
+                .get('href')
+
+            next_page = url + next_page
+            #print('Scraping', next_page)
+            data += scrape_quotes(next_page)
+
+    return data
+
+data = scrape_quotes(url)
+
+df = pd.DataFrame(data)
+df.head()
+df.to_csv('quotes_data.csv')
+
