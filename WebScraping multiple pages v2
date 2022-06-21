@@ -1,0 +1,15 @@
+import pandas as pd
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
+
+#creating an array of values and passing it in the url for dynamic webpages
+#1 to 1000 with step up of 100
+pages = np.arange(1,1000,100)
+
+#the whole core of the script
+for page in pages:
+    page = requests.get("https://www.imdb.com/search/title/?groups=top_1000&sort=user_rating,desc&count=100&start="+str(page)+"&ref_=adv_nxt")
+    soup = BeautifulSoup(page.text, 'html.parser')
+    movie_data = soup.findAll('div', attrs = {'class': 'lister-item mode-advanced'})
+
