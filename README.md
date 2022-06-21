@@ -1,2 +1,3 @@
 # WebScraping
-WebScraping models
+WebScraping Models
+Just some basic webscraping model with different variations
