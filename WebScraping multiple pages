@@ -1,0 +1,17 @@
+from bs4 import BeautifulSoup
+import requests
+
+def scrape_pages(url) -> None:
+    # max_pages = 24
+    max_pages = 3 # doing 3 pages for examples sake
+    current_page = 1
+
+    # Loop through all pages dynamically and build the url using the page number suffix the website uses
+    while current_page <= max_pages:
+        print(f'{url}?page_num={current_page}')
+
+        # Get each page's html
+        raw_html = requests.get(f'{url}?page_num={current_page}')
+        soup = BeautifulSoup(raw_html.text, 'html.parser')
+
+
